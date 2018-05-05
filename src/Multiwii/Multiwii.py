@@ -3,7 +3,7 @@ import time
 import serial
 import struct
 
-from Multiwii import MultiwiiSettings, Drone
+from src.Multiwii import MultiwiiSettings, Drone
 
 
 class MultiWii(object):

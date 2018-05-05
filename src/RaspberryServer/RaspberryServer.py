@@ -80,7 +80,7 @@ class RaspberryServer:
                     self.mw.disarm()
 
                 if code == self.SET_RC:
-                    self.mw.set_rc(data)
+                    self.mw.set_rc(list(data))
 
     @staticmethod
     def __create_package(code, size, data):

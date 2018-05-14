@@ -4,7 +4,6 @@ from socket import socket
 from src.Multiwii.Multiwii import MultiWii
 
 
-
 class RaspberryServer:
 
     # Android APP / Raspberry protocol

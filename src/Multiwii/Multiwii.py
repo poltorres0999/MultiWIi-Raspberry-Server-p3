@@ -241,6 +241,72 @@ class MultiWii(object):
 
                 timer = time.time()
 
+    # UDP communication methods
+
+    def udp_get_altitude(self):
+
+        if not self.udp_server_started:
+            self.__start_udp_server()
+
+        altitude = self.get_altitude()
+        data = [altitude['estalt'], altitude['vario']]
+
+        self.sock.sendto(self.__create_package(self.ALTITUDE, 4, data),
+                         (self.settings.ip_address, 4446))
+
+    def udp_get_attitude(self):
+
+        if not self.udp_server_started:
+            self.__start_udp_server()
+
+        attitude = self.get_attitude()
+        data = [attitude['angx'], attitude['angy'], attitude['heading']]
+
+        self.sock.sendto(self.__create_package(self.ATTITUDE, 6, data),
+                         (self.settings.ip_address, 4446))
+
+    def udp_get_raw_imu(self):
+
+        if not self.udp_server_started:
+            self.__start_udp_server()
+
+        raw_imu = self.get_raw_imu()
+        data = [raw_imu["accx"], raw_imu["accy"], raw_imu["accz"], raw_imu["gyrx"], raw_imu["gyry"],
+                raw_imu["gyrz"], raw_imu["magx"], raw_imu["magy"], raw_imu["magz"]]
+
+        self.sock.sendto(self.__create_package(self.RAW_IMU, 18, data),
+                         (self.settings.ip_address, 4446))
+
+    def udp_get_rc(self):
+
+        if not self.udp_server_started:
+            self.__start_udp_server()
+
+        rc = self.get_rc()
+        data = [rc["roll"], rc["pitch"], rc["yaw"], rc["throttle"]]
+        self.sock.sendto(self.__create_package(self.RC, 8, data),
+                         (self.settings.ip_address, 4446))
+
+    def udp_get_motor(self):
+
+        if not self.udp_server_started:
+            self.__start_udp_server()
+
+        motor = self.get_motor()
+        data = [motor['m1'], motor['m2'], motor['m3'], motor['m4']]
+        self.sock.sendto(self.__create_package(self.MOTOR, 8, data),
+                         (self.settings.ip_address, 4446))
+
+    def udp_get_servo(self):
+
+        if not self.udp_server_started:
+            self.__start_udp_server()
+
+        servo = self.get_servo()
+        data = [servo['s1'], servo['s2'], servo['s3'], servo['s4']]
+        self.sock.sendto(self.__create_package(self.SERVO, 8, data),
+                         (self.settings.ip_address, 4446))
+
     def udp_telemetry_loop(self):
 
         self.__start_udp_server()
@@ -256,44 +322,22 @@ class MultiWii(object):
                 if time.time() - timer >= self.settings.TELEMETRY_TIME:
 
                     if self.settings.MSP_ALTITUDE:
-                        altitude = self.get_altitude()
-                        data = [altitude['estalt'], altitude['vario']]
-
-                        self.sock.sendto(self.__create_package(self.ALTITUDE, 4, data),
-                                         (self.settings.ip_address, 4446))
+                        self.udp_get_altitude()
 
                     if self.settings.MSP_ATTITUDE:
-                        attitude = self.get_attitude()
-                        data = [attitude['angx'], attitude['angy'], attitude['heading']]
-
-                        self.sock.sendto(self.__create_package(self.ATTITUDE, 6, data),
-                                         (self.settings.ip_address, 4446))
+                        self.udp_get_altitude()
 
                     if self.settings.MSP_RAW_IMU:
-                        raw_imu = self.get_raw_imu()
-                        data = [raw_imu["accx"], raw_imu["accy"], raw_imu["accz"], raw_imu["gyrx"], raw_imu["gyry"],
-                                raw_imu["gyrz"], raw_imu["magx"], raw_imu["magy"], raw_imu["magz"]]
-
-                        self.sock.sendto(self.__create_package(self.RAW_IMU, 18, data),
-                                         (self.settings.ip_address, 4446))
+                        self.udp_get_raw_imu()
 
                     if self.settings.MSP_RC:
-                        rc = self.get_rc()
-                        data = [rc["roll"], rc["pitch"], rc["yaw"], rc["throttle"]]
-                        self.sock.sendto(self.__create_package(self.RC, 8, data),
-                                         (self.settings.ip_address, 4446))
+                        self.udp_get_rc()
 
                     if self.settings.MSP_MOTOR:
-                        motor = self.get_motor()
-                        data = [motor['m1'], motor['m2'], motor['m3'], motor['m4']]
-                        self.sock.sendto(self.__create_package(self.MOTOR, 8, data),
-                                         (self.settings.ip_address, 4446))
+                        self.udp_get_motor()
 
                     if self.settings.MSP_SERVO:
-                        servo = self.get_servo()
-                        data = [servo['s1'], servo['s2'], servo['s3'], servo['s4']]
-                        self.sock.sendto(self.__create_package(self.SERVO, 8, data),
-                                         (self.settings.ip_address, 4446))
+                        self.get_servo()
 
                     timer = time.time()
         else:
@@ -316,15 +360,21 @@ class MultiWii(object):
         else:
             print("Server already started!")
 
-    def stop_telemetry(self): self.telemetry = False
+    def stop_telemetry(self):
+        self.telemetry = False
 
-    def stop_udp_telemetry(self):
-
-        self.udp_telemetry = False
+    def close_udp_server(self):
 
         if self.sock != "":
             self.udp_server_started = False
             self.sock.close()
+
+    def stop_udp_telemetry(self):
+
+        self.close_udp_server()
+        self.udp_telemetry = False
+
+
 
     @staticmethod
     def __create_package(code, size, data):

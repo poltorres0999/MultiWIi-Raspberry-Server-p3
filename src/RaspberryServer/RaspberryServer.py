@@ -1,5 +1,8 @@
 import struct
 from socket import socket
+
+import _thread
+
 from src.Multiwii.Multiwii import MultiWii
 
 
@@ -9,10 +12,10 @@ class RaspberryServer:
 
     START_CONNECTION = 300
     END_CONNECTION = 301
-    ARM = 302
-    DISARM = 303
-    START_TELEMETRY = 304
-    END_TELEMETRY = 305
+    ARM = 220
+    DISARM = 221
+    START_TELEMETRY = 120
+    END_TELEMETRY = 121
     RAW_IMU = 102
     SERVO = 103
     MOTOR = 104
@@ -20,13 +23,13 @@ class RaspberryServer:
     ATTITUDE = 108
     ALTITUDE = 109
     SET_RC = 200
-    START_CAMERA = 306
-    END_CAMERA = 307
-    START_RECORDING = 308
-    TAKE_PHOTO = 309
-    SET_CAMERA_ZOOM = 310
-    SET_CAMERA_RESOLUTION = 311
-    SET_CAMERA_BRIGHTNESS = 312
+    START_CAMERA = 600
+    END_CAMERA = 6001
+    START_RECORDING = 602
+    TAKE_PHOTO = 603
+    SET_CAMERA_ZOOM = 604
+    SET_CAMERA_RESOLUTION = 605
+    SET_CAMERA_BRIGHTNESS = 606
 
     def __init__(self, ip_address, port):
         self.ip_address = ip_address
@@ -35,6 +38,7 @@ class RaspberryServer:
         self.mw = MultiWii()
         self.sock = ""
         self.server_started = False
+        self.telemetry_activated = False
         self.camera = ""
         self.camera_streaming_ip = ""
 
@@ -87,25 +91,16 @@ class RaspberryServer:
     def evaluate_package(self, code, data):
 
         if code[0] == 3:
-            self.config_package(code)
+            self.server_config_package(code)
 
         if code[0] == 2:
             self.drone_control_packages(code, data)
 
+        if code[0] == 1:
+            self.drone_telemetry_package(code)
 
-
-        if code == self.END_CAMERA:
-            if self.camera != "":
-                self.camera.close()
-
-        if code == self.SET_CAMERA_RESOLUTION:
-            self.camera.resolution = ""
-
-        if code == self.SET_CAMERA_BRIGHTNESS:
-            self.camera.brightness = ""
-
-        if code == self.SET_CAMERA_ZOOM:
-            self.camera.crop = ""
+        if code[0] == 6:
+            self.camera_control_package(code, data)
 
     # covers the basic packages for communication and server configuration
 
@@ -132,30 +127,55 @@ class RaspberryServer:
         if code == self.SET_RC:
             self.mw.set_rc(list(data))
 
+    # covers the packages used to receive information about the drone state (altitude, acc, gyro, ...)
+
     def drone_telemetry_package(self, code):
 
         if code == self.START_TELEMETRY:
-            self.mw.udp_telemetry_loop()
+
+            if not self.telemetry_activated:
+                # creates a new thread to manage the telemetry loop
+                t = _thread.start_new_thread(self.mw.udp_telemetry_loop, ())
+
+                if not t:
+                    print("Error: MultiWii server not started")
 
         if code == self.END_TELEMETRY:
             self.mw.stop_udp_telemetry()
 
+        if code == self.ALTITUDE:
+            self.mw.udp_get_altitude()
 
+        if code == self.ATTITUDE:
+            self.mw.udp_get_attitude()
 
+        if code == self.RAW_IMU:
+            self.mw.udp_get_raw_imu()
 
-        START_TELEMETRY = 304
-        END_TELEMETRY = 305
-        RAW_IMU = 102
-        SERVO = 103
-        MOTOR = 104
-        RC = 105
-        ATTITUDE = 108
-        ALTITUDE = 109
+        if code == self.RC:
+            self.mw.udp_get_rc()
 
+        if code == self.SERVO:
+            self.mw.get_servo()
 
+        if code == self.MOTOR:
+            self.mw.get_motor()
 
+    def camera_control_package(self, code, data):
 
+        if code == self.START_CAMERA:
+            if self.camera == "":
+                self.camera = piCamera()
 
+        if code == self.END_CAMERA:
+            if self.camera != "":
+                self.camera.close()
 
+        if code == self.SET_CAMERA_RESOLUTION:
+            self.camera.resolution = (data[0], data[1])
 
+        if code == self.SET_CAMERA_BRIGHTNESS:
+            self.camera.brightness = data
 
+        if code == self.SET_CAMERA_ZOOM:
+            self.camera.crop = data

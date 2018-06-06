@@ -374,8 +374,6 @@ class MultiWii(object):
         self.close_udp_server()
         self.udp_telemetry = False
 
-
-
     @staticmethod
     def __create_package(code, size, data):
 

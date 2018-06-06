@@ -75,6 +75,7 @@ class RaspberryServer:
                 print("Code: {0} Size: {1} Data: {2}".format(code, size, data))
 
                 # Determines what kind of package has received, and acts in consequence
+                self.evaluate_package(code, data)
 
     @staticmethod
     def __create_package(code, size, data):
@@ -90,16 +91,16 @@ class RaspberryServer:
 
     def evaluate_package(self, code, data):
 
-        if code[0] == 3:
+        if int(str(code)[:1]) == 3:
             self.server_config_package(code)
 
-        if code[0] == 2:
+        if int(str(code)[:1]) == 2:
             self.drone_control_packages(code, data)
 
-        if code[0] == 1:
+        if int(str(code)[:1]) == 1:
             self.drone_telemetry_package(code)
 
-        if code[0] == 6:
+        if int(str(code)[:1]) == 6:
             self.camera_control_package(code, data)
 
     # covers the basic packages for communication and server configuration

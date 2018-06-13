@@ -78,7 +78,7 @@ class Test:
         print("Timestamp: {} ,".format(motor["timestamp"]))
         print("-------------------\n")
 
-    def test_motor(self):
+    def test_servo(self):
 
         servo = self.mw.get_servo()
 
@@ -106,30 +106,55 @@ class Test:
 
         self.mw.set_rc([roll, pitch, yaw, throttle])
     """
-    def test_telemetry(self):
+    def test_telemetry(self, duraion):
 
         _thread.start_new_thread(self.mw.telemetry_loop, ())
 
         if self.mw.settings.MSP_ALTITUDE:
             alt = self.mw.drone.altitude
-            print("-------Altitude--------\n")
+            print("-------ALTITUDE--------\n")
             print("EstAlt: %f cm, Vario: %f") % (alt["estalt"], alt["vario"])
+            print("-----------------------\n")
+
+        if self.mw.settings.MSP_ATTITUDE:
+            att = self.mw.drone.attitude
+            print("-------ATTITUDE--------\n")
+            print("Angx: %f cm, Angy: %f") % (att["angx"], att["angy"])
             print("-----------------------\n")
 
         if self.mw.settings.MSP_RAW_IMU:
             raw_imu = self.mw.drone.raw_imu
-            print("------Raw_IMU-------")
+            print("------RAW IMU-------")
             print("ACC -> accx: %f, accy: %f, accz %f" % (raw_imu["accx"], raw_imu["accy"], raw_imu["accz"]))
             print("GYRO -> gyrx: %f, gyry: %f, gyrz: %f" % (raw_imu["gyrx"], raw_imu["gyry"], raw_imu["gyrz"]))
             print("---------------------")
 
         if self.mw.settings.MSP_RC:
             rc = self.mw.drone.rc_channels
-            print("--------Rc--------")
+            print("--------RC--------")
             print("Roll: %f, Pitch: %f, Yaw: %f, Throttle: %f" % (rc["roll"], rc["pitch"], rc["yaw"], rc["throttle"]))
             print("------------------")
 
-    def test_udp_telemetry(self):
+        if self.mw.settings.MSP_PID:
+            pid = self.mw.drone.PID_coef
+            print("--------PID--------")
+            print("Rp: %f, Ri: %f, Rd: %f, Pp: %f, Pi: %f, Pd: %f, Yp: %f, Yi: %f, Yd: %f"
+                  % (pid["rp"], pid["ri"], pid["rd"], pid["pp"], pid["pi"], pid["pd"], pid["yp"], pid["yi"], pid["yd"]))
+            print("------------------")
+
+        if self.mw.settings.MSP_MOTOR:
+            mo = self.mw.drone.motor
+            print("--------MOTORS--------")
+            print("M1: %f, M2: %f, M3: %f, M4: %f" % (mo["m1"], mo["m2"], mo["m3"], mo["m4"]))
+            print("------------------")
+
+        if self.mw.settings.MSP_SERVO:
+            se = self.mw.drone.servo
+            print("--------SERVOS--------")
+            print("S1: %f, S2: %f, S3: %f, S4: %f" % (se["s1"], se["s2"], se["s3"], se["s4"]))
+            print("------------------")
+
+    def test_udp_telemetry(self, duration):
 
         server_started = False
 
@@ -154,7 +179,7 @@ class Test:
                 time_start = time.time()
                 timer = time.time()
 
-                while time.time() - time_start < 10:
+                while time.time() - time_start < duration:
 
                     if time.time() - timer >= self.mw.settings.TELEMETRY_TIME:
 

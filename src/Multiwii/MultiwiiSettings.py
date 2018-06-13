@@ -7,7 +7,6 @@ class Settings(object):
     def __init__(self):
 
         # Decides which functions will be executed in the loop method of the Multiwii
-        self.MSP_IDENT = False
         self.MSP_PID = False
         self.MSP_RAW_IMU = True
         self.MSP_SERVO = False

@@ -2,10 +2,10 @@ class Drone:
 
     def __init__(self):
         self.armed = False
-        self.indent = {'version': 0, 'multitype': 0, 'capability': 0}
         self.attitude = {'angx': 0, 'angy': 0, 'heading': 0, 'elapsed': 0, 'timestamp': 0}
         self.altitude = {'estalt': 0, 'vario': 0, 'elapsed': 0, 'timestamp': 0}
-        self.PID_coef = {'rp': 0, 'ri': 0, 'rd': 0, 'pp': 0, 'pi': 0, 'pd': 0, 'yp': 0, 'yi': 0, 'yd': 0}
+        self.PID_coef = {'rp': 0, 'ri': 0, 'rd': 0, 'pp': 0, 'pi': 0, 'pd': 0, 'yp': 0, 'yi': 0, 'yd': 0,
+                         'elapsed': 0, 'timestamp': 0}
         self.raw_imu = {'accx': 0, 'accy': 0, 'accz': 0, 'gyrx': 0, 'gyry': 0, 'gyrz': 0, 'magx': 0, 'magy': 0,
                         'magz': 0, 'elapsed': 0, 'timestamp': 0}
         self.motor = {'m1': 0, 'm2': 0, 'm3': 0, 'm4': 0, 'elapsed': 0, 'timestamp': 0}

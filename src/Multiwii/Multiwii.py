@@ -207,6 +207,24 @@ class MultiWii(object):
 
         return self.drone.servo
 
+    def get_pid_coef(self):
+
+        total_data, elapsed = self.get_data(MultiWii.PID)
+
+        self.drone.PID_coef['rp'] = total_data[0]
+        self.drone.PID_coef['ri'] = total_data[0]
+        self.drone.PID_coef['rd'] = total_data[0]
+        self.drone.PID_coef['pp'] = total_data[0]
+        self.drone.PID_coef['pi'] = total_data[0]
+        self.drone.PID_coef['pd'] = total_data[0]
+        self.drone.PID_coef['yp'] = total_data[0]
+        self.drone.PID_coef['yi'] = total_data[0]
+        self.drone.PID_coef['yd'] = total_data[0]
+        self.drone.PID_coef['elapsed'] = "%0.3f" % (elapsed,)
+        self.drone.PID_coef['timestamp'] = "%0.2f" % (time.time(),)
+
+        return self.drone.PID_coef
+
     def set_rc(self, rc_data):
 
         self.send_cmd(8, MultiWii.SET_RAW_RC, rc_data)

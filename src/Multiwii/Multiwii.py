@@ -325,6 +325,18 @@ class MultiWii(object):
         self.sock.sendto(self.__create_package(self.SERVO, 8, data),
                          (self.settings.ip_address, 4446))
 
+    def udp_get_pid_coef(self):
+
+        if not self.udp_server_started:
+            self.__start_udp_server()
+
+        pid = self.get_pid_coef()
+        data = [pid["rp"], pid["ri"], pid["rd"], pid["pp"], pid["pi"],
+                pid["pd"], pid["yp"], pid["yi"], pid["yd"]]
+
+        self.sock.sendto(self.__create_package(self.PID, 18, data),
+                         (self.settings.ip_address, 4446))
+
     def udp_telemetry_loop(self):
 
         self.__start_udp_server()

@@ -57,54 +57,52 @@ class Test:
 
         self.mw.set_rc([roll, pitch, yaw, throttle])
 
-        current_rc = self.mw.get_rc()
-        self.test_get_rc(current_rc)
+        self.test_get_rc()
 
     def test_telemetry(self, duration):
 
         _thread.start_new_thread(self.mw.telemetry_loop, ())
 
         time_start = time.time()
-        timer = time.time()
 
         while time.time() - time_start < duration:
 
-            if time.time() - timer >= self.mw.settings.TELEMETRY_TIME:
+            if self.mw.settings.MSP_ALTITUDE:
+                alt = self.mw.drone.altitude
 
-                if self.mw.settings.MSP_ALTITUDE:
-                    alt = self.mw.drone.altitude
+                self.__print_altitude(alt)
 
-                    self.__print_altitude(alt)
+            if self.mw.settings.MSP_ATTITUDE:
+                att = self.mw.drone.attitude
 
-                if self.mw.settings.MSP_ATTITUDE:
-                    att = self.mw.drone.attitude
+                self.__print_attitude(att)
 
-                    self.__print_attitude(att)
+            if self.mw.settings.MSP_RAW_IMU:
+                raw_imu = self.mw.drone.raw_imu
 
-                if self.mw.settings.MSP_RAW_IMU:
-                    raw_imu = self.mw.drone.raw_imu
+                self.__print_raw_imu(raw_imu)
 
-                    self.__print_raw_imu(raw_imu)
+            if self.mw.settings.MSP_RC:
+                rc = self.mw.drone.rc_channels
 
-                if self.mw.settings.MSP_RC:
-                    rc = self.mw.drone.rc_channels
+                self.__print_rc(rc)
 
-                    self.__print_rc(rc)
+            if self.mw.settings.MSP_PID:
+                pid = self.mw.drone.PID_coef
 
-                if self.mw.settings.MSP_PID:
-                    pid = self.mw.drone.PID_coef
+                self.__print_pid_coef(pid)
 
-                    self.__print_pid_coef(pid)
+            if self.mw.settings.MSP_MOTOR:
+                mo = self.mw.drone.motor
 
-                if self.mw.settings.MSP_MOTOR:
-                    mo = self.mw.drone.motor
+                self.__print_motor(mo)
 
-                    self.__print_motor(mo)
+            if self.mw.settings.MSP_SERVO:
+                se = self.mw.drone.servo
 
-                if self.mw.settings.MSP_SERVO:
-                    se = self.mw.drone.servo
+                self.__print_servo(se)
 
-                    self.__print_servo(se)
+            time.sleep(self.mw.settings.TELEMETRY_TIME)
 
         self.mw.stop_telemetry()
 
@@ -131,21 +129,20 @@ class Test:
                 print("Error: MultiWii server not started")
             else:
                 time_start = time.time()
-                timer = time.time()
 
                 while time.time() - time_start < duration:
 
-                    if time.time() - timer >= self.mw.settings.TELEMETRY_TIME:
+                    data = sock.recv(40)
 
-                        data = sock.recv(40)
+                    code = struct.unpack('<h', data[:2])[0]
+                    size = struct.unpack('<h', data[2:4])[0]
+                    data = struct.unpack('<' + 'h' * int(size / 2), data[4:size + 4])
 
-                        code = struct.unpack('<h', data[:2])[0]
-                        size = struct.unpack('<h', data[2:4])[0]
-                        data = struct.unpack('<' + 'h' * int(size / 2), data[4:size + 4])
+                    print("Code: {0} Size: {1} Data: {2}".format(code, size, data))
 
-                        print("Code: {0} Size: {1} Data: {2}".format(code, size, data))
+                    self.__evaluate_package(code, size, data)
 
-                        self.__evaluate_package(code, size, data)
+                    time.sleep(self.mw.settings.TELEMETRY_TIME)
 
                 self.mw.stop_udp_telemetry()
 
@@ -192,6 +189,36 @@ class Test:
                 print("Error in pid package, size should be 18 instead of: %f" % size)
 
             self.__print_pid_coef(data)
+
+    def test_drone_motors(self, duration):
+
+        self.mw.arm()
+
+        time_start = time.time()
+
+        roll = 1000
+        pitch = 1000
+        yaw = 1000
+        throttle = 1000
+
+        self.test_set_rc(roll, pitch, yaw, throttle)
+
+        while time.time() - time_start < duration:
+
+            if not (roll >= 2000 | pitch >= 2000 | yaw >= 2000 | throttle >= 2000):
+
+                roll += 2
+                pitch += 2
+                yaw += 2
+                throttle += 2
+
+                time.sleep(self.mw.settings.timeMSP)
+                
+                self.test_set_rc(roll, pitch, yaw, throttle)
+
+            self.test_set_rc(roll, pitch, yaw, throttle)
+
+        self.mw.disarm()
 
     def __print_altitude(self, data):
 

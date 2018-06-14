@@ -1,6 +1,6 @@
-from src.Multiwii.Multiwii import MultiWii
 
+from src.Test.Test import Test
 
-mw = MultiWii()
+test = Test()
 
-mw.arm()
+test.test_drone_motors(10)

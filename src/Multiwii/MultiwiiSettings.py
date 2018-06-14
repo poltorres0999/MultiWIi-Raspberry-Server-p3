@@ -20,8 +20,8 @@ class Settings(object):
 
         self.throttle_yaw = True
         self.throttle_roll = False
-        self.max_yaw = 1900
-        self.min_throttle = 900
+        self.max_yaw = 2000
+        self.min_throttle = 990
         self.max_roll = 1900
         self.min_yaw = 900
         self.min_roll = 900
@@ -34,7 +34,7 @@ class Settings(object):
 
         # Serial port configuration
         self.serial_port = serial.Serial()
-        self.serial_port.port = "COM6"
+        self.serial_port.port = "COM4"
         self.serial_port.baudrate = 115200
         self.serial_port.bytesize = serial.EIGHTBITS
         self.serial_port.parity = serial.PARITY_NONE
@@ -44,7 +44,7 @@ class Settings(object):
         self.serial_port.rtscts = False
         self.serial_port.dsrdtr = False
         self.serial_port.write_timeout = 2
-        self.wakeup = 2
+        self.wakeup = 10
         self.timeMSP = 0.02
 
 

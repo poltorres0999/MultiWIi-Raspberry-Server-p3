@@ -119,12 +119,12 @@ class MultiWii(object):
             if self.settings.throttle_yaw:
                 start = time.time()
                 while (time.time() - start) < 2.5:
-                    self.set_rc([1500, 1500, self.settings.min_yaw, self.settings.min_throttle])
+                    self.set_rc([1500, 1500, self.settings.max_yaw, self.settings.min_throttle])
 
             if self.settings.throttle_roll:
                 start = time.time()
                 while (time.time() - start) < 2.5:
-                    self.set_rc([self.settings.min_roll, 1500, 1500, self.settings.min_throttle])
+                    self.set_rc([self.settings.max_roll, 1500, 1500, self.settings.min_throttle])
 
             self.drone.armed = True
 
@@ -135,12 +135,12 @@ class MultiWii(object):
             if self.settings.throttle_yaw:
                 start = time.time()
                 while (time.time() - start) < 2.5:
-                    self.set_rc([1500, 1500, self.settings.max_yaw, self.settings.min_throttle])
+                    self.set_rc([1500, 1500, self.settings.min_yaw, self.settings.min_throttle])
 
             if self.settings.throttle_roll:
                 start = time.time()
                 while (time.time() - start) < 2.5:
-                    self.set_rc([self.settings.max_roll, 1500, 1500, self.settings.min_throttle])
+                    self.set_rc([self.settings.min_roll, 1500, 1500, self.settings.min_throttle])
 
         self.drone.armed = False
 

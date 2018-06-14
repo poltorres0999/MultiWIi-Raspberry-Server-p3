@@ -148,7 +148,6 @@ class Test:
 
                 self.mw.stop_udp_telemetry()
 
-
     def __evaluate_package(self, code, size, data):
 
         if code == self.mw.ATTITUDE:

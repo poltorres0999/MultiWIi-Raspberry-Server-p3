@@ -115,16 +115,33 @@ class MultiWii(object):
     def arm(self):
 
         if not self.drone.armed:
-            start = time.time()
-            while (time.time() - start) < 0.5:
-                self.set_rc([1500, 1500, 2000, 1000])
+
+            if self.settings.throttle_yaw:
+                start = time.time()
+                while (time.time() - start) < 2.5:
+                    self.set_rc([1500, 1500, self.settings.min_yaw, self.settings.min_throttle])
+
+            if self.settings.throttle_roll:
+                start = time.time()
+                while (time.time() - start) < 2.5:
+                    self.set_rc([self.settings.min_roll, 1500, 1500, self.settings.min_throttle])
+
             self.drone.armed = True
 
     def disarm(self):
 
-        start = time.time()
-        while (time.time() - start) < 0.5:
-            self.set_rc([1500, 1500, 1000, 1000])
+        if self.drone.armed:
+
+            if self.settings.throttle_yaw:
+                start = time.time()
+                while (time.time() - start) < 2.5:
+                    self.set_rc([1500, 1500, self.settings.max_yaw, self.settings.min_throttle])
+
+            if self.settings.throttle_roll:
+                start = time.time()
+                while (time.time() - start) < 2.5:
+                    self.set_rc([self.settings.max_roll, 1500, 1500, self.settings.min_throttle])
+
         self.drone.armed = False
 
     def get_altitude(self):
@@ -150,6 +167,7 @@ class MultiWii(object):
 
         return self.drone.attitude
 
+    # ROLL/PITCH/YAW/THROTTLE
     def get_rc(self):
 
         total_data, elapsed = self.get_data(MultiWii.RC)

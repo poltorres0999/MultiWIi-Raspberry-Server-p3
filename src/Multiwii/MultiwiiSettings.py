@@ -16,6 +16,16 @@ class Settings(object):
         self.MSP_ALTITUDE = True
         self.TELEMETRY_TIME = 1
 
+        # Arm/Disarm configuration
+
+        self.throttle_yaw = True
+        self.throttle_roll = False
+        self.max_yaw = 1900
+        self.min_throttle = 900
+        self.max_roll = 1900
+        self.min_yaw = 900
+        self.min_roll = 900
+
         # Raspberry Pi UDP Server attributes
         self.ip_address = "127.0.0.1"
         self.control_port = 4445

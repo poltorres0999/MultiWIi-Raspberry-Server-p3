@@ -53,12 +53,13 @@ class Test:
 
         self.__print_rc(rc)
 
-
-    """
     def test_set_rc(self, roll, pitch, yaw, throttle):
 
         self.mw.set_rc([roll, pitch, yaw, throttle])
-    """
+
+        current_rc = self.mw.get_rc()
+        self.test_get_rc(current_rc)
+
     def test_telemetry(self, duration):
 
         _thread.start_new_thread(self.mw.telemetry_loop, ())

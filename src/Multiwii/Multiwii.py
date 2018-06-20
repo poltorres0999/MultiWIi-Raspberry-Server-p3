@@ -410,6 +410,7 @@ class MultiWii(object):
 
     def stop_telemetry(self):
         self.telemetry = False
+        print("Telemetry stopped!")
 
     def close_udp_server(self):
 
@@ -421,6 +422,7 @@ class MultiWii(object):
 
         self.close_udp_server()
         self.udp_telemetry = False
+        print("UDP telemetry stopped!")
 
     @staticmethod
     def __create_package(code, size, data):

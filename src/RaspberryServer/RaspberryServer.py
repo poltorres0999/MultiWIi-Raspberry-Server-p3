@@ -23,13 +23,6 @@ class RaspberryServer:
     ATTITUDE = 108
     ALTITUDE = 109
     SET_RC = 200
-    START_CAMERA = 600
-    END_CAMERA = 6001
-    START_RECORDING = 602
-    TAKE_PHOTO = 603
-    SET_CAMERA_ZOOM = 604
-    SET_CAMERA_RESOLUTION = 605
-    SET_CAMERA_BRIGHTNESS = 606
 
     def __init__(self, ip_address, port):
         self.ip_address = ip_address
@@ -85,6 +78,8 @@ class RaspberryServer:
         data = struct.pack('<' + 'h' * len(data), *data)
         package = code + size + data
 
+        print("Package created -> " + str(package))
+
         return package
 
     # Need to organize in function of the first number of the protocol id
@@ -100,9 +95,6 @@ class RaspberryServer:
         if int(str(code)[:1]) == 1:
             self.drone_telemetry_package(code)
 
-        if int(str(code)[:1]) == 6:
-            self.camera_control_package(code, data)
-
     # covers the basic packages for communication and server configuration
 
     def server_config_package(self, code):
@@ -110,10 +102,12 @@ class RaspberryServer:
         if code == self.START_CONNECTION:
             self.sock.sendto(self.__create_package(self.START_CONNECTION, 1, 0),
                              self.mw.settings.address, )
+            print("Start connection package sent!")
 
         if code == self.END_CONNECTION:
             self.sock.close()
             self.server_started = False
+            print("Connection finished!")
 
     # covers the packages used to control the drone (arm, disarm, rc, ...)
 
@@ -121,12 +115,15 @@ class RaspberryServer:
 
         if code == self.ARM:
             self.mw.arm()
+            print("Received ARM command")
 
         if code == self.DISARM:
             self.mw.disarm()
+            print("Received DISARM command")
 
         if code == self.SET_RC:
             self.mw.set_rc(list(data))
+            print("Received SET_RC command, values: " + str(data))
 
     # covers the packages used to receive information about the drone state (altitude, acc, gyro, ...)
 
@@ -139,44 +136,35 @@ class RaspberryServer:
                 t = _thread.start_new_thread(self.mw.udp_telemetry_loop, ())
 
                 if not t:
-                    print("Error: MultiWii server not started")
+                    print("Error: MultiWii udp connection not started")
+
+                print("Telemetry thread started!")
 
         if code == self.END_TELEMETRY:
             self.mw.stop_udp_telemetry()
+            print("Stop telemetry command received!")
 
         if code == self.ALTITUDE:
             self.mw.udp_get_altitude()
+            print("Received get_altitude command!, values: " + str(self.mw.drone.altitude))
 
         if code == self.ATTITUDE:
             self.mw.udp_get_attitude()
+            print("Received get_attitude command!, values: " + str(self.mw.drone.attitude))
 
         if code == self.RAW_IMU:
             self.mw.udp_get_raw_imu()
+            print("Received get_raw_imu command!, values: " + str(self.mw.drone.raw_imu))
 
         if code == self.RC:
             self.mw.udp_get_rc()
+            print("Received get_rc command!, values: " + str(self.mw.drone.rc_channels))
 
         if code == self.SERVO:
             self.mw.get_servo()
+            print("Received get_servo command!, values: " + str(self.mw.drone.servo))
 
         if code == self.MOTOR:
             self.mw.get_motor()
+            print("Received get_motor command!, values: " + str(self.mw.drone.motor))
 
-    def camera_control_package(self, code, data):
-
-        if code == self.START_CAMERA:
-            if self.camera == "":
-                self.camera = piCamera()
-
-        if code == self.END_CAMERA:
-            if self.camera != "":
-                self.camera.close()
-
-        if code == self.SET_CAMERA_RESOLUTION:
-            self.camera.resolution = (data[0], data[1])
-
-        if code == self.SET_CAMERA_BRIGHTNESS:
-            self.camera.brightness = data
-
-        if code == self.SET_CAMERA_ZOOM:
-            self.camera.crop = data

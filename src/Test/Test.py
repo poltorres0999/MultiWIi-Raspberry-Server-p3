@@ -213,7 +213,7 @@ class Test:
                 throttle += 2
 
                 time.sleep(self.mw.settings.timeMSP)
-                
+
                 self.test_set_rc(roll, pitch, yaw, throttle)
 
             self.test_set_rc(roll, pitch, yaw, throttle)

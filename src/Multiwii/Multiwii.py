@@ -288,7 +288,7 @@ class MultiWii(object):
         data = [altitude['estalt'], altitude['vario']]
 
         self.sock.sendto(self.__create_package(self.ALTITUDE, 4, data),
-                         (self.settings.ip_address, 4446))
+                         self.settings.address)
 
     def udp_get_attitude(self):
 
@@ -299,7 +299,7 @@ class MultiWii(object):
         data = [attitude['angx'], attitude['angy'], attitude['heading']]
 
         self.sock.sendto(self.__create_package(self.ATTITUDE, 6, data),
-                         (self.settings.ip_address, 4446))
+                         self.settings.address)
 
     def udp_get_raw_imu(self):
 
@@ -310,8 +310,7 @@ class MultiWii(object):
         data = [raw_imu["accx"], raw_imu["accy"], raw_imu["accz"], raw_imu["gyrx"], raw_imu["gyry"],
                 raw_imu["gyrz"], raw_imu["magx"], raw_imu["magy"], raw_imu["magz"]]
 
-        self.sock.sendto(self.__create_package(self.RAW_IMU, 18, data),
-                         (self.settings.ip_address, 4446))
+        self.sock.sendto(self.__create_package(self.RAW_IMU, 18, data), self.settings.address)
 
     def udp_get_rc(self):
 
@@ -320,8 +319,7 @@ class MultiWii(object):
 
         rc = self.get_rc()
         data = [rc["roll"], rc["pitch"], rc["yaw"], rc["throttle"]]
-        self.sock.sendto(self.__create_package(self.RC, 8, data),
-                         (self.settings.ip_address, 4446))
+        self.sock.sendto(self.__create_package(self.RC, 8, data), self.settings.address)
 
     def udp_get_motor(self):
 
@@ -330,8 +328,7 @@ class MultiWii(object):
 
         motor = self.get_motor()
         data = [motor['m1'], motor['m2'], motor['m3'], motor['m4']]
-        self.sock.sendto(self.__create_package(self.MOTOR, 8, data),
-                         (self.settings.ip_address, 4446))
+        self.sock.sendto(self.__create_package(self.MOTOR, 8, data), self.settings.address)
 
     def udp_get_servo(self):
 
@@ -340,8 +337,7 @@ class MultiWii(object):
 
         servo = self.get_servo()
         data = [servo['s1'], servo['s2'], servo['s3'], servo['s4']]
-        self.sock.sendto(self.__create_package(self.SERVO, 8, data),
-                         (self.settings.ip_address, 4446))
+        self.sock.sendto(self.__create_package(self.SERVO, 8, data), self.settings.address)
 
     def udp_get_pid_coef(self):
 
@@ -352,8 +348,7 @@ class MultiWii(object):
         data = [pid["rp"], pid["ri"], pid["rd"], pid["pp"], pid["pi"],
                 pid["pd"], pid["yp"], pid["yi"], pid["yd"]]
 
-        self.sock.sendto(self.__create_package(self.PID, 18, data),
-                         (self.settings.ip_address, 4446))
+        self.sock.sendto(self.__create_package(self.PID, 18, data), self.settings.address)
 
     def udp_telemetry_loop(self):
 

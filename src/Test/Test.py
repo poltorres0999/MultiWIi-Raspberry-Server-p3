@@ -106,6 +106,7 @@ class Test:
 
         self.mw.stop_telemetry()
 
+    # To test this method need to change MultiWii udp_server port
     def test_udp_telemetry(self, duration):
 
         server_started = False

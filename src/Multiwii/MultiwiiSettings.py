@@ -29,7 +29,6 @@ class Settings(object):
         # Raspberry Pi UDP Server attributes
         self.ip_address = "127.0.0.1"
         self.control_port = 4445
-        self.telemetry_port = 4446
         self.address = (self.ip_address, self.control_port)
 
         # Serial port configuration

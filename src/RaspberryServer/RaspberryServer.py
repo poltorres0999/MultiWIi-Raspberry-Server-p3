@@ -1,5 +1,5 @@
 import struct
-from socket import socket
+import socket
 
 import _thread
 
@@ -11,10 +11,12 @@ class RaspberryServer:
     # Android APP / Raspberry protocol
 
     START_CONNECTION = 300
+    ACCEPT_CONNECTION = 302
     END_CONNECTION = 301
     ARM = 220
     DISARM = 221
     START_TELEMETRY = 120
+    ACCEPT_TELEMETRY = 122
     END_TELEMETRY = 121
     RAW_IMU = 102
     SERVO = 103
@@ -57,7 +59,7 @@ class RaspberryServer:
             print("Start listening, waiting for data")
             while self.server_started:
 
-                package = self.sock.receive(40)
+                package = self.sock.recvfrom(40)
 
                 print("Received {} bytes".format(len(package)))
 
@@ -100,8 +102,8 @@ class RaspberryServer:
     def server_config_package(self, code):
 
         if code == self.START_CONNECTION:
-            self.sock.sendto(self.__create_package(self.START_CONNECTION, 1, 0),
-                             self.mw.settings.address, )
+            self.sock.sendto(self.__create_package(self.ACCEPT_CONNECTION, 1, 0),
+                             self.address)
             print("Start connection package sent!")
 
         if code == self.END_CONNECTION:
@@ -132,6 +134,8 @@ class RaspberryServer:
         if code == self.START_TELEMETRY:
 
             if not self.telemetry_activated:
+                self.sock.sendto(self.__create_package(self.ACCEPT_TELEMETRY, 1, 0),
+                                 self.address)
                 # creates a new thread to manage the telemetry loop
                 t = _thread.start_new_thread(self.mw.udp_telemetry_loop, ())
 

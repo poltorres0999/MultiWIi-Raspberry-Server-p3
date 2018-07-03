@@ -28,12 +28,12 @@ class Settings(object):
 
         # Raspberry Pi UDP Server attributes
         self.ip_address = "127.0.0.1"
-        self.control_port = 4445
-        self.address = (self.ip_address, self.control_port)
+        self.port = 4446
+        self.address = (self.ip_address, self.port)
 
         # Serial port configuration
         self.serial_port = serial.Serial()
-        self.serial_port.port = "COM4"
+        self.serial_port.port = "COM6"
         self.serial_port.baudrate = 115200
         self.serial_port.bytesize = serial.EIGHTBITS
         self.serial_port.parity = serial.PARITY_NONE

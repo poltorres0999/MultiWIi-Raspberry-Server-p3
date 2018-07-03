@@ -391,12 +391,10 @@ class MultiWii(object):
         if not self.udp_server_started:
 
             try:
-                address = self.settings.address
                 self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 print("Socket creation: Socket created!")
-                self.sock.bind(address)
-                print("Socket binding: Socket bound!")
                 self.udp_server_started = True
+                print("Server started!")
 
             except socket.error as err:
                 print("Error starting server: {}".format(err))

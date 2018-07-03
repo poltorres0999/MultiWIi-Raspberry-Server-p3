@@ -106,18 +106,18 @@ class Test:
 
         self.mw.stop_telemetry()
 
-    # To test this method need to change MultiWii udp_server port
     def test_udp_telemetry(self, duration):
 
         server_started = False
 
         try:
-            address = (self.mw.settings.ip_address, 4446)
+            address = self.mw.settings.address
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             print("Socket creation: Socket created!")
             sock.bind(address)
             print("Socket binding: Socket bound!")
             server_started = True
+            print("Sever started")
 
         except socket.error as err:
             print("Error starting server: {}".format(err))

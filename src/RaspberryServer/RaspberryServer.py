@@ -60,50 +60,52 @@ class RaspberryServer:
             while self.server_started:
 
                 package = self.sock.recvfrom(40)
+                p = package[0]
+                address = package[1]
 
                 print("Received {} bytes".format(len(package)))
 
-                code = struct.unpack('<h', package[:2])[0]
-                size = struct.unpack('<h', package[2:4])[0]
-                data = struct.unpack('<' + 'h' * int(size / 2), package[4:size + 4])
+                # '>' for BigEndian encoding , change to < for LittleEndian, or @ for native.
+
+                code = struct.unpack('>h', p[:2])[0]
+                size = struct.unpack('>h', p[2:4])[0]
+                data = struct.unpack('>' + 'h' * int(size / 2), p[4:size + 4])
 
                 print("Code: {0} Size: {1} Data: {2}".format(code, size, data))
 
                 # Determines what kind of package has received, and acts in consequence
-                self.evaluate_package(code, data)
+                self.evaluate_package(code, data, address)
 
     @staticmethod
     def __create_package(code, size, data):
-
-        code = struct.pack('<h', code)
-        size = struct.pack('<h', size)
-        data = struct.pack('<' + 'h' * len(data), *data)
+        # '>' for BigEndian encoding , change to < for LittleEndian, or @ for native.
+        code = struct.pack('>h', code)
+        size = struct.pack('>h', size)
+        data = struct.pack('>' + 'h' * len(data), *data)
         package = code + size + data
 
         print("Package created -> " + str(package))
 
         return package
 
-    # Need to organize in function of the first number of the protocol id
-
-    def evaluate_package(self, code, data):
+    def evaluate_package(self, code, data, address):
 
         if int(str(code)[:1]) == 3:
-            self.server_config_package(code)
+            self.server_config_package(code, address)
 
         if int(str(code)[:1]) == 2:
             self.drone_control_packages(code, data)
 
         if int(str(code)[:1]) == 1:
-            self.drone_telemetry_package(code)
+            self.drone_telemetry_package(code, address)
 
     # covers the basic packages for communication and server configuration
 
-    def server_config_package(self, code):
+    def server_config_package(self, code, address):
 
         if code == self.START_CONNECTION:
-            self.sock.sendto(self.__create_package(self.ACCEPT_CONNECTION, 1, 0),
-                             self.address)
+            self.sock.sendto(self.__create_package(self.ACCEPT_CONNECTION, 2, [0]),
+                             address)
             print("Start connection package sent!")
 
         if code == self.END_CONNECTION:
@@ -129,13 +131,13 @@ class RaspberryServer:
 
     # covers the packages used to receive information about the drone state (altitude, acc, gyro, ...)
 
-    def drone_telemetry_package(self, code):
+    def drone_telemetry_package(self, code, address):
 
         if code == self.START_TELEMETRY:
 
             if not self.telemetry_activated:
-                self.sock.sendto(self.__create_package(self.ACCEPT_TELEMETRY, 1, 0),
-                                 self.address)
+                self.sock.sendto(self.__create_package(self.ACCEPT_TELEMETRY, 1, [0]),
+                                 address)
                 # creates a new thread to manage the telemetry loop
                 t = _thread.start_new_thread(self.mw.udp_telemetry_loop, ())
 

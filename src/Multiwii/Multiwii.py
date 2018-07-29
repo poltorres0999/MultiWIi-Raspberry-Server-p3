@@ -372,7 +372,7 @@ class MultiWii(object):
                         self.udp_get_altitude()
 
                     if self.settings.MSP_ATTITUDE:
-                        self.udp_get_altitude()
+                        self.udp_get_attitude()
 
                     if self.settings.MSP_RAW_IMU:
                         self.udp_get_raw_imu()

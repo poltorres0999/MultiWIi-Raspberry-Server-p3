@@ -50,7 +50,7 @@ class MultiWii(object):
 
         self.drone = Drone.Drone()
         self.udp_server_started = False
-        self.sock = ""
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.udp_telemetry = False
         self.telemetry = False
 
@@ -287,8 +287,8 @@ class MultiWii(object):
         altitude = self.get_altitude()
         data = [altitude['estalt'], altitude['vario']]
 
-        self.sock.sendto(self.__create_package(self.ALTITUDE, 4, data),
-                         self.settings.address)
+        print("SEND ALTITUDE")
+        self.sock.sendto(MultiWii.__create_big_endian_package(self.ALTITUDE, 4, data), self.settings.address)
 
     def udp_get_attitude(self):
 
@@ -298,7 +298,8 @@ class MultiWii(object):
         attitude = self.get_attitude()
         data = [attitude['angx'], attitude['angy'], attitude['heading']]
 
-        self.sock.sendto(self.__create_package(self.ATTITUDE, 6, data),
+        print("SEND ATTITUDE")
+        self.sock.sendto(self.__create_big_endian_package(self.ATTITUDE, 6, data),
                          self.settings.address)
 
     def udp_get_raw_imu(self):
@@ -310,7 +311,8 @@ class MultiWii(object):
         data = [raw_imu["accx"], raw_imu["accy"], raw_imu["accz"], raw_imu["gyrx"], raw_imu["gyry"],
                 raw_imu["gyrz"], raw_imu["magx"], raw_imu["magy"], raw_imu["magz"]]
 
-        self.sock.sendto(self.__create_package(self.RAW_IMU, 18, data), self.settings.address)
+        print("SEND RAW_IMU")
+        self.sock.sendto(self.__create_big_endian_package(self.RAW_IMU, 18, data), self.settings.address)
 
     def udp_get_rc(self):
 
@@ -319,7 +321,9 @@ class MultiWii(object):
 
         rc = self.get_rc()
         data = [rc["roll"], rc["pitch"], rc["yaw"], rc["throttle"]]
-        self.sock.sendto(self.__create_package(self.RC, 8, data), self.settings.address)
+
+        print("SEND RC")
+        self.sock.sendto(self.__create_big_endian_package(self.RC, 8, data), self.settings.address)
 
     def udp_get_motor(self):
 
@@ -328,7 +332,7 @@ class MultiWii(object):
 
         motor = self.get_motor()
         data = [motor['m1'], motor['m2'], motor['m3'], motor['m4']]
-        self.sock.sendto(self.__create_package(self.MOTOR, 8, data), self.settings.address)
+        self.sock.sendto(self.__create_big_endian_package(self.MOTOR, 8, data), self.settings.address)
 
     def udp_get_servo(self):
 
@@ -337,7 +341,7 @@ class MultiWii(object):
 
         servo = self.get_servo()
         data = [servo['s1'], servo['s2'], servo['s3'], servo['s4']]
-        self.sock.sendto(self.__create_package(self.SERVO, 8, data), self.settings.address)
+        self.sock.sendto(self.__create_big_endian_package(self.SERVO, 8, data), self.settings.address)
 
     def udp_get_pid_coef(self):
 
@@ -348,11 +352,11 @@ class MultiWii(object):
         data = [pid["rp"], pid["ri"], pid["rd"], pid["pp"], pid["pi"],
                 pid["pd"], pid["yp"], pid["yi"], pid["yd"]]
 
-        self.sock.sendto(self.__create_package(self.PID, 18, data), self.settings.address)
+        self.sock.sendto(self.__create_big_endian_package(self.PID, 18, data), self.settings.address)
 
-    def udp_telemetry_loop(self):
+    def udp_telemetry_loop(self, address, sock):
 
-        self.__start_udp_server()
+        self.__start_udp_server(address, sock)
 
         if self.udp_server_started:
 
@@ -386,12 +390,19 @@ class MultiWii(object):
         else:
             return self.udp_server_started
 
-    def __start_udp_server(self):
+    def __start_udp_server(self, address, sock):
 
         if not self.udp_server_started:
 
             try:
-                self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                if address != "":
+                    self.settings.address = address
+
+                if sock != "":
+                    self.sock = sock
+                else:
+                    self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
                 print("Socket creation: Socket created!")
                 self.udp_server_started = True
                 print("Server started!")
@@ -418,11 +429,21 @@ class MultiWii(object):
         print("UDP telemetry stopped!")
 
     @staticmethod
-    def __create_package(code, size, data):
+    def __create_little_endian_package(code, size, data):
 
         code = struct.pack('<h', code)
         size = struct.pack('<h', size)
         data = struct.pack('<'+'h' * len(data), *data)
+        package = code + size + data
+
+        return package
+
+    @staticmethod
+    def __create_big_endian_package(code, size, data):
+
+        code = struct.pack('>h', code)
+        size = struct.pack('>h', size)
+        data = struct.pack('>' + 'h' * len(data), *data)
         package = code + size + data
 
         return package

@@ -12,7 +12,7 @@ class Settings(object):
         self.MSP_SERVO = False
         self.MSP_MOTOR = False
         self.MSP_RC = False
-        self.MSP_ATTITUDE = False
+        self.MSP_ATTITUDE = True
         self.MSP_ALTITUDE = True
         self.TELEMETRY_TIME = 1
 
@@ -27,13 +27,13 @@ class Settings(object):
         self.min_roll = 900
 
         # Raspberry Pi UDP Server attributes
-        self.ip_address = "127.0.0.1"
+        self.ip_address = "192.168.0.162"
         self.port = 4446
         self.address = (self.ip_address, self.port)
 
         # Serial port configuration
         self.serial_port = serial.Serial()
-        self.serial_port.port = "COM6"
+        self.serial_port.port = "COM4"
         self.serial_port.baudrate = 115200
         self.serial_port.bytesize = serial.EIGHTBITS
         self.serial_port.parity = serial.PARITY_NONE
@@ -42,7 +42,7 @@ class Settings(object):
         self.serial_port.xonxoff = False
         self.serial_port.rtscts = False
         self.serial_port.dsrdtr = False
-        self.serial_port.write_timeout = 2
+        self.serial_port.write_timeout = 0
         self.wakeup = 10
         self.timeMSP = 0.02
 

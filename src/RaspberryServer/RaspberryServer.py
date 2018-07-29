@@ -11,8 +11,8 @@ class RaspberryServer:
     # Android APP / Raspberry protocol
 
     START_CONNECTION = 300
-    ACCEPT_CONNECTION = 302
-    END_CONNECTION = 301
+    ACCEPT_CONNECTION = 301
+    END_CONNECTION = 302
     ARM = 220
     DISARM = 221
     START_TELEMETRY = 120
@@ -34,8 +34,6 @@ class RaspberryServer:
         self.sock = ""
         self.server_started = False
         self.telemetry_activated = False
-        self.camera = ""
-        self.camera_streaming_ip = ""
 
     def start_server(self):
 
@@ -63,7 +61,7 @@ class RaspberryServer:
                 p = package[0]
                 address = package[1]
 
-                print("Received {} bytes".format(len(package)))
+                print("Received {} bytes from {}".format(len(package), address))
 
                 # '>' for BigEndian encoding , change to < for LittleEndian, or @ for native.
 
@@ -71,7 +69,7 @@ class RaspberryServer:
                 size = struct.unpack('>h', p[2:4])[0]
                 data = struct.unpack('>' + 'h' * int(size / 2), p[4:size + 4])
 
-                print("Code: {0} Size: {1} Data: {2}".format(code, size, data))
+                print("Code: {0} Size: {1} Data: {2} Address: {3}".format(code, size, data, address))
 
                 # Determines what kind of package has received, and acts in consequence
                 self.evaluate_package(code, data, address)
@@ -134,12 +132,13 @@ class RaspberryServer:
     def drone_telemetry_package(self, code, address):
 
         if code == self.START_TELEMETRY:
-
+            print("Telemetry command received")
             if not self.telemetry_activated:
                 self.sock.sendto(self.__create_package(self.ACCEPT_TELEMETRY, 1, [0]),
                                  address)
+                print("Telemetry accept message sent")
                 # creates a new thread to manage the telemetry loop
-                t = _thread.start_new_thread(self.mw.udp_telemetry_loop, ())
+                t = _thread.start_new_thread(self.mw.udp_telemetry_loop(address, self.sock), ())
 
                 if not t:
                     print("Error: MultiWii udp connection not started")

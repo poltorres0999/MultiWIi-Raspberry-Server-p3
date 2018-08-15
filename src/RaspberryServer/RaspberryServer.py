@@ -155,10 +155,13 @@ class RaspberryServer:
                 # creates a new thread to manage the telemetry loop
                 _thread.start_new_thread(self.mw.udp_telemetry_loop, (address, self.sock))
 
+                self.telemetry_activated = True
+
                 print("Telemetry thread started!")
 
         if code == self.END_TELEMETRY:
             self.mw.stop_udp_telemetry()
+            self.telemetry_activated = False
             print("Stop telemetry command received!")
 
         if code == self.ALTITUDE:

@@ -246,6 +246,7 @@ class MultiWii(object):
     def set_rc(self, rc_data):
 
         self.send_cmd(8, MultiWii.SET_RAW_RC, rc_data)
+        print("Rc values: ", rc_data)
 
     def telemetry_loop(self):
 
@@ -424,7 +425,6 @@ class MultiWii(object):
 
     def stop_udp_telemetry(self):
 
-        self.close_udp_server()
         self.udp_telemetry = False
         print("UDP telemetry stopped!")
 

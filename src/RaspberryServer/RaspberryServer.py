@@ -16,8 +16,8 @@ class RaspberryServer:
     ARM = 220
     DISARM = 221
     START_TELEMETRY = 120
-    ACCEPT_TELEMETRY = 122
-    END_TELEMETRY = 121
+    ACCEPT_TELEMETRY = 121
+    END_TELEMETRY = 122
     RAW_IMU = 102
     SERVO = 103
     MOTOR = 104
@@ -34,6 +34,8 @@ class RaspberryServer:
         self.sock = ""
         self.server_started = False
         self.telemetry_activated = False
+        self.active_device = ""
+        self.server_timeout = 5.0
 
     def start_server(self):
 
@@ -44,6 +46,7 @@ class RaspberryServer:
                 self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 print("Socket creation: Socket created!")
                 self.sock.bind(self.address)
+                self.sock.settimeout(self.server_timeout)
                 print("Socket binding: Socket bound!")
                 self.server_started = True
                 print("Server started!")
@@ -55,24 +58,35 @@ class RaspberryServer:
 
         if self.server_started:
             print("Start listening, waiting for data")
+
             while self.server_started:
 
-                package = self.sock.recvfrom(40)
-                p = package[0]
-                address = package[1]
+                try:
 
-                print("Received {} bytes from {}".format(len(package), address))
+                    package = self.sock.recvfrom(40)
+                    p = package[0]
+                    address = package[1]
 
-                # '>' for BigEndian encoding , change to < for LittleEndian, or @ for native.
+                    if address == self.active_device or self.active_device == "":
 
-                code = struct.unpack('>h', p[:2])[0]
-                size = struct.unpack('>h', p[2:4])[0]
-                data = struct.unpack('>' + 'h' * int(size / 2), p[4:size + 4])
+                        print("Received {} bytes from {}".format(len(package), address))
 
-                print("Code: {0} Size: {1} Data: {2} Address: {3}".format(code, size, data, address))
+                        # '>' for BigEndian encoding , change to < for LittleEndian, or @ for native.
 
-                # Determines what kind of package has received, and acts in consequence
-                self.evaluate_package(code, data, address)
+                        code = struct.unpack('>h', p[:2])[0]
+                        size = struct.unpack('>h', p[2:4])[0]
+                        data = struct.unpack('>' + 'h' * int(size / 2), p[4:size + 4])
+
+                        print("Code: {0} Size: {1} Data: {2} Address: {3}".format(code, size, data, address))
+
+                        # Determines what kind of package has received, and acts in consequence
+                        self.evaluate_package(code, data, address)
+
+                except socket.timeout as err:
+                    print("Socket err: ", err)
+                    self.active_device = ""
+                    print("Restarting server...")
+                    self.start_listening()
 
     @staticmethod
     def __create_package(code, size, data):
@@ -104,6 +118,7 @@ class RaspberryServer:
         if code == self.START_CONNECTION:
             self.sock.sendto(self.__create_package(self.ACCEPT_CONNECTION, 2, [0]),
                              address)
+            self.active_device = address
             print("Start connection package sent!")
 
         if code == self.END_CONNECTION:
@@ -138,10 +153,7 @@ class RaspberryServer:
                                  address)
                 print("Telemetry accept message sent")
                 # creates a new thread to manage the telemetry loop
-                t = _thread.start_new_thread(self.mw.udp_telemetry_loop(address, self.sock), ())
-
-                if not t:
-                    print("Error: MultiWii udp connection not started")
+                _thread.start_new_thread(self.mw.udp_telemetry_loop, (address, self.sock))
 
                 print("Telemetry thread started!")
 

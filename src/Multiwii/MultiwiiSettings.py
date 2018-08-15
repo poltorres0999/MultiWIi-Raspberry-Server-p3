@@ -12,7 +12,7 @@ class Settings(object):
         self.MSP_SERVO = False
         self.MSP_MOTOR = False
         self.MSP_RC = False
-        self.MSP_ATTITUDE = True
+        self.MSP_ATTITUDE = False
         self.MSP_ALTITUDE = True
         self.TELEMETRY_TIME = 1
 
@@ -27,7 +27,7 @@ class Settings(object):
         self.min_roll = 900
 
         # Raspberry Pi UDP Server attributes
-        self.ip_address = "192.168.0.162"
+        self.ip_address = "192.168.1.38"
         self.port = 4446
         self.address = (self.ip_address, self.port)
 

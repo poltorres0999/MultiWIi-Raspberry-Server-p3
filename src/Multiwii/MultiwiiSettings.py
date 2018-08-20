@@ -1,4 +1,3 @@
-
 import serial
 
 
@@ -27,7 +26,7 @@ class Settings(object):
         self.min_roll = 900
 
         # Raspberry Pi UDP Server attributes
-        self.ip_address = "192.168.1.38"
+        self.ip_address = "192.168.0.164"
         self.port = 4446
         self.address = (self.ip_address, self.port)
 

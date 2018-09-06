@@ -5,7 +5,7 @@ class Settings(object):
 
     def __init__(self):
 
-        # Decides which functions will be executed in the loop method of the Multiwii
+        # Decides which functions will be executed in the loop method of the MultiWii
         self.MSP_PID = False
         self.MSP_RAW_IMU = True
         self.MSP_SERVO = False
@@ -15,7 +15,7 @@ class Settings(object):
         self.MSP_ALTITUDE = True
         self.TELEMETRY_TIME = 1
 
-        # Arm/Disarm configuration
+        # Arm/Disarm configuration, used to define which kind of sequence/values are needed to arm/disarm the drone.
 
         self.throttle_yaw = True
         self.throttle_roll = False
@@ -25,12 +25,12 @@ class Settings(object):
         self.min_yaw = 900
         self.min_roll = 900
 
-        # Raspberry Pi UDP Server attributes
+        # Raspberry Pi UDP Server attributes: Ip address and port of telemetry receiver.
         self.ip_address = "192.168.0.164"
         self.port = 4446
         self.address = (self.ip_address, self.port)
 
-        # Serial port configuration
+        # Serial port configuration (change port name to the port where the MultiWii is connected)
         self.serial_port = serial.Serial()
         self.serial_port.port = "COM4"
         self.serial_port.baudrate = 115200

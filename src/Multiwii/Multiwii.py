@@ -46,7 +46,7 @@ class MultiWii(object):
     IS_SERIAL = 211
     DEBUG = 254
 
-    def __init__(self): # Add conf file to the constructor
+    def __init__(self):
 
         self.drone = Drone.Drone()
         self.udp_server_started = False
@@ -61,6 +61,9 @@ class MultiWii(object):
             time.sleep(self.settings.wakeup)
         except ValueError as err:
             print('Serial port exception:' + str(err) + '\n')
+
+    # Sends a command through serial port to the MultiWii using the MSP. Where code is the ID of the command of the MSP,
+    # data is the values to be send, nda data_length is the length in bytes of the data.
 
     def send_cmd(self, data_length, code, data):
 
@@ -84,6 +87,9 @@ class MultiWii(object):
 
         except ValueError as err:
             print('Serial port exception:' + str(err) + '\n')
+
+    # Collects data information (ACC, GYR, Altitude, Attitude, ...)
+    # Requires a command ID related to the MSP getter commands
 
     def get_data(self, cmd):
 
@@ -112,6 +118,8 @@ class MultiWii(object):
         except serial.SerialException as err:
             print('Serial port exception:' + str(err) + '\n')
 
+    # Method used to arm the Drone
+
     def arm(self):
 
         if not self.drone.armed:
@@ -128,6 +136,8 @@ class MultiWii(object):
 
             self.drone.armed = True
 
+    # Method ued to disarm the drone
+
     def disarm(self):
 
         if self.drone.armed:
@@ -143,6 +153,9 @@ class MultiWii(object):
                     self.set_rc([self.settings.min_roll, 1500, 1500, self.settings.min_throttle])
 
         self.drone.armed = False
+
+    # All methods above are used to get data information, more methods can be added using the same structure as the ones
+    # that are already implemented, and using te MSP getters ID'.
 
     def get_altitude(self):
 
@@ -167,7 +180,6 @@ class MultiWii(object):
 
         return self.drone.attitude
 
-    # ROLL/PITCH/YAW/THROTTLE
     def get_rc(self):
 
         total_data, elapsed = self.get_data(MultiWii.RC)
@@ -243,6 +255,9 @@ class MultiWii(object):
 
         return self.drone.PID_coef
 
+    # Sets the values for the ESC of the drone, it's the main method to control it. Needs a 4 short array values
+    # [Roll, Yaw, Pitch, Throttle]
+
     def set_rc(self, rc_data):
 
         self.send_cmd(8, MultiWii.SET_RAW_RC, rc_data)
@@ -278,7 +293,7 @@ class MultiWii(object):
 
                 timer = time.time()
 
-    # UDP communication methods
+    # UDP communication methods, are used to send data information to the IP and Port configured on the settings file.
 
     def udp_get_altitude(self):
 
@@ -354,6 +369,8 @@ class MultiWii(object):
                 pid["pd"], pid["yp"], pid["yi"], pid["yd"]]
 
         self.sock.sendto(self.__create_big_endian_package(self.PID, 18, data), self.settings.address)
+
+    # Sends constantly the desired telemetry data to the device specified on the settings file.
 
     def udp_telemetry_loop(self, address, sock):
 
